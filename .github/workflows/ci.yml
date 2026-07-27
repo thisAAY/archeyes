@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  release:
+    types: [published]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "26"
+      - run: npm ci
+      - name: Typecheck (schema + CLI)
+        run: npm run typecheck
+      - name: Verify generated types are in sync with the schema
+        run: |
+          npm run gen:types
+          git diff --exit-code schema/*.types.ts || {
+            echo "::error::schema/*.types.ts out of date — run 'npm run gen:types' and commit."
+            exit 1
+          }
+      - name: Test (schema + CLI + process-model integration)
+        run: npm test
+
+  build-ui:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "26"
+      - name: Install (root + ui)
+        run: |
+          npm ci
+          cd ui && npm ci
+      - name: Build single-file UI bundle
+        working-directory: ui
+        run: npm run build
+      - name: E2E (real-browser round-trip)
+        working-directory: ui
+        run: |
+          npx playwright install --with-deps chromium
+          npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        with:
+          name: archeyes-ui
+          path: dist/ui/index.html
+
+  publish:
+    needs: [test, build-ui]
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "26"
+          registry-url: "https://registry.npmjs.org"
+      - run: npm ci
+      - name: Build UI into dist/ui (shipped in the npm tarball)
+        working-directory: ui
+        run: npm ci && npm run build
+      - run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
