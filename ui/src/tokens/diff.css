@@ -1,0 +1,49 @@
+/* ============================================================
+   ArchEyes — DIFF STATUS TREATMENTS
+   THE core rule: status must read WITHOUT color. Each status has
+   a distinct border style + glyph (+ strikethrough/opacity for
+   deleted). Color only reinforces. Colorblind-safe by design.
+
+     existing  : thin solid border, neutral                 (no glyph)
+     new       : thick solid border + faint ring/glow        glyph  +
+     modified  : dashed border                               glyph  ~
+     deleted   : dotted border, 55% opacity, strikethrough   glyph  −
+
+   Utility classes below apply the full recipe to any node-like box.
+   ============================================================ */
+:root {
+  --status-glyph-new:"+"; /* @kind other */
+  --status-glyph-modified:"~"; /* @kind other */
+  --status-glyph-deleted:"\2212"; /* @kind other */ /* minus sign */
+}
+
+.ax-status-existing{ border:var(--bw-1) solid var(--border-strong); }
+
+.ax-status-new{
+  border:var(--bw-3) solid var(--st-new-line);
+  box-shadow:var(--sh-node), var(--sh-new-ring);
+}
+
+.ax-status-modified{
+  border:var(--bw-2) dashed var(--st-modified-line);
+}
+
+.ax-status-deleted{
+  border:var(--bw-2) dotted var(--st-deleted-line);
+  opacity:.55;
+  background:var(--surface-sunken);
+}
+.ax-status-deleted .ax-node-title,
+.ax-status-deleted .ax-node-path{ text-decoration:line-through; }
+
+/* status pill — label + glyph, sits on the node's top edge */
+.ax-status-pill{
+  display:inline-flex; align-items:center; gap:3px;
+  font-family:var(--font-mono); font-size:var(--fs-micro);
+  font-weight:var(--fw-bold); letter-spacing:var(--ls-wide);
+  padding:1px 6px; border-radius:var(--r-full); line-height:1.5;
+}
+.ax-status-pill.new{ background:var(--st-new); color:var(--st-new-ink); }
+.ax-status-pill.modified{ background:var(--st-modified); color:var(--st-modified-ink); }
+.ax-status-pill.deleted{ background:var(--st-deleted-line); color:var(--st-deleted-ink); }
+.ax-status-pill.existing{ background:transparent; color:var(--st-existing-ink); border:1px solid var(--border-strong); }

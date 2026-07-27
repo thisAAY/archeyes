@@ -1,0 +1,9 @@
+/* The ArchEyes design system, consumed verbatim from _ds/ (single source of
+   truth for the visual language). Do not hand-edit token values here — edit the
+   source in _ds/ and re-copy. */
+@import "./fonts.css";
+@import "./colors.css";
+@import "./typography.css";
+@import "./spacing.css";
+@import "./diff.css";
+@import "./base.css";

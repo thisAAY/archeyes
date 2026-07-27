@@ -1,0 +1,44 @@
+/* ============================================================
+   ArchEyes — SPACE, RADIUS, ELEVATION, MOTION
+   4px base grid. Small radii (instrument, not SaaS-round).
+   Motion is minimal: fast fades + position tweens, no bounce.
+   ============================================================ */
+:root {
+  /* spacing — 4px grid */
+  --sp-0:0; /* @kind spacing */ --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px;
+  --sp-5:20px; --sp-6:24px; --sp-8:32px; --sp-10:40px; --sp-12:48px;
+
+  /* radius — base 6px */
+  --r-xs:3px;   /* chips, pills, glyph badges */
+  --r-sm:5px;   /* kind icon chip, inputs */
+  --r-md:6px;   /* nodes, buttons */
+  --r-lg:8px;   /* toolbars, popovers */
+  --r-xl:10px;  /* group panels, dialogs */
+  --r-full:999px;
+
+  /* borders */
+  --bw-hair:1px; --bw-1:1px; --bw-2:1.5px; --bw-3:2px;
+
+  /* elevation — restrained; raised = 1px border + inner highlight + soft drop */
+  --sh-node:inset 0 1px 0 var(--highlight), 0 1px 3px rgba(0,0,0,.28);
+  --sh-raise:inset 0 1px 0 var(--highlight), 0 2px 8px rgba(0,0,0,.40);
+  --sh-pop:0 8px 28px rgba(0,0,0,.50), 0 0 0 1px var(--hairline);
+  --sh-selected:0 0 0 2px var(--accent), 0 0 16px var(--accent-glow);
+  --sh-new-ring:0 0 0 3px var(--st-new-tint);
+  --sh-glow-new:0 0 14px var(--st-new-tint);
+
+  /* motion — minimal, crisp */
+  --ease-out:cubic-bezier(.2,.8,.3,1); /* @kind other */
+  --ease-inout:cubic-bezier(.4,0,.2,1); /* @kind other */
+  --dur-instant:80ms; /* @kind other */
+  --dur-fast:120ms; /* @kind other */
+  --dur-base:180ms; /* @kind other */
+  --dur-slow:260ms; /* @kind other */
+  --t-hover:background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out); /* @kind other */
+}
+@media (prefers-reduced-motion:reduce){:root{
+  --dur-instant:0ms; /* @kind other */
+  --dur-fast:0ms; /* @kind other */
+  --dur-base:0ms; /* @kind other */
+  --dur-slow:0ms; /* @kind other */
+}}

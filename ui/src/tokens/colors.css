@@ -1,0 +1,90 @@
+/* ============================================================
+   ArchEyes — COLOR
+   Dark is the default (lives next to a terminal). Light is a
+   scoped override under [data-theme="light"].
+   Color is REINFORCEMENT for diff status, never the sole signal.
+   ============================================================ */
+:root {
+  /* --- raw neutrals (dark) --- */
+  --gray-950:#0a0c10; --gray-900:#0b0d12; --gray-880:#0e1117;
+  --gray-850:#12161f; --gray-820:#141826; --gray-800:#161b24;
+  --gray-750:#1a1e28; --gray-700:#232838; --gray-650:#2a3141;
+  --gray-600:#3f4a60; --gray-500:#5d6779; --gray-400:#7d8aa3;
+  --gray-300:#98a3b6; --gray-200:#aab4c8; --gray-100:#d3dae6;
+  --gray-050:#e6e9ef; --white:#ffffff;
+
+  /* --- accent (selection + primary action ONLY) --- */
+  --accent:#4d7cfe; --accent-hover:#5f8bff; --accent-active:#3f6ceb;
+  --accent-fg:#ffffff; --accent-weak:rgba(77,124,254,.10);
+  --accent-ring:rgba(77,124,254,.45); --accent-glow:rgba(77,124,254,.28);
+
+  /* --- diff status hues (reinforcement) --- */
+  --st-existing:#3f4a60; --st-existing-ink:#98a3b6;
+  --st-new:#4ec98a; --st-new-line:#3aa06a; --st-new-tint:rgba(62,160,110,.12); --st-new-ink:#0b0d12;
+  --st-modified:#e0b356; --st-modified-line:#b8923a; --st-modified-tint:rgba(184,146,58,.12); --st-modified-ink:#0b0d12;
+  --st-deleted:#c97a7a; --st-deleted-line:#8a4a4a; --st-deleted-tint:rgba(138,74,74,.12); --st-deleted-ink:#e6e9ef;
+
+  /* --- semantic surfaces --- */
+  --bg-app:var(--gray-950);
+  --bg-canvas:var(--gray-900);
+  --canvas-dot:#141926;
+  --surface-1:var(--gray-850);      /* toolbar, panels, popovers */
+  --surface-2:var(--gray-800);      /* node top of gradient */
+  --surface-2b:#12161e;             /* node bottom of gradient */
+  --surface-sunken:var(--gray-880); /* deleted node bg, wells */
+  --surface-chip:#1e2534;           /* kind icon chip */
+
+  /* --- borders --- */
+  --border:var(--gray-700);
+  --border-strong:var(--gray-650);
+  --border-hover:#333c4e;
+  --hairline:rgba(255,255,255,.06);
+  --highlight:rgba(255,255,255,.06); /* inner top highlight on raised surfaces */
+
+  /* --- text --- */
+  --text-1:var(--gray-100);
+  --text-2:var(--gray-300);
+  --text-3:var(--gray-500);
+  --text-mono:var(--gray-500);
+  --text-onaccent:var(--accent-fg);
+
+  /* --- group panels --- */
+  --group-fill:rgba(255,255,255,.02);
+  --group-fill-domain:rgba(77,124,254,.05);
+  --group-header:var(--gray-820);
+}
+
+[data-theme="light"] {
+  --bg-app:#eef0f3;
+  --bg-canvas:#f6f7f9;
+  --canvas-dot:#dfe3ea;
+  --surface-1:#ffffff;
+  --surface-2:#ffffff;
+  --surface-2b:#fbfcfd;
+  --surface-sunken:#f1f3f6;
+  --surface-chip:#eef1f6;
+
+  --border:#e2e5ea;
+  --border-strong:#d3d8e0;
+  --border-hover:#c4cbd6;
+  --hairline:rgba(15,20,30,.06);
+  --highlight:rgba(255,255,255,.9);
+
+  --text-1:#161a22;
+  --text-2:#4a5568;
+  --text-3:#7a8494;
+  --text-mono:#7a8494;
+
+  --accent:#3a63e0; --accent-hover:#3358d4; --accent-active:#2c4dc0;
+  --accent-weak:rgba(58,99,224,.08);
+  --accent-ring:rgba(58,99,224,.35); --accent-glow:rgba(58,99,224,.20);
+
+  --st-existing:#c4cbd6; --st-existing-ink:#5a6577;
+  --st-new:#2f9e63; --st-new-line:#2f9e63; --st-new-tint:rgba(47,158,99,.10); --st-new-ink:#ffffff;
+  --st-modified:#c08a1e; --st-modified-line:#c08a1e; --st-modified-tint:rgba(192,138,30,.12); --st-modified-ink:#ffffff;
+  --st-deleted:#c0554f; --st-deleted-line:#c0554f; --st-deleted-tint:rgba(192,85,79,.10); --st-deleted-ink:#ffffff;
+
+  --group-fill:rgba(15,20,30,.015);
+  --group-fill-domain:rgba(58,99,224,.04);
+  --group-header:#f1f3f6;
+}
