@@ -2,7 +2,7 @@
   "name": "archeyes",
   "displayName": "ArchEyes",
   "version": "0.1.0",
-  "description": "A diagram you talk back to — render your agent's plan as an interactive architecture graph, edit it directly (drag, reconnect, comment), and send the structured edits back.",
+  "description": "A diagram you talk back to — render a plan, an existing codebase, or a feature as an interactive architecture graph, edit it directly (drag, reconnect, comment), and send the structured edits back to the agent.",
   "author": { "name": "thisAAY", "url": "https://github.com/thisAAY" },
   "homepage": "https://github.com/thisAAY/archeyes",
   "repository": "https://github.com/thisAAY/archeyes",

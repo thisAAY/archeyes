@@ -1,7 +1,7 @@
 {
   "name": "archeyes",
   "version": "0.1.0",
-  "description": "A diagram you talk back to — edit your AI agent's plan and send structured feedback. Interactive architecture diagrams for the plan-review loop.",
+  "description": "A diagram you talk back to — edit an AI agent's plan and send structured feedback. Interactive architecture diagrams for a plan, an existing codebase, or a feature.",
   "type": "module",
   "license": "MIT",
   "author": "thisAAY",

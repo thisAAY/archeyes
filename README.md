@@ -11,7 +11,14 @@
 
 <p align="center"><b>A diagram you talk back to — edit your agent's plan, send structured feedback.</b></p>
 
-Every other tool in this space is one-way: plan in, picture out. **ArchEyes closes the loop.** Your coding agent renders its plan as an interactive architecture graph; you drag nodes, reconnect edges, draw new ones, and comment on nodes (with `@mentions`); you hit **Send**; the edits flow back to the agent as revision instructions with exact node IDs — no prose, no ambiguity. It revises and re-renders. Repeat until you approve.
+Every other tool in this space is one-way: code or plan in, picture out. **ArchEyes closes the loop.** Your coding agent renders an architecture as an interactive graph; you drag nodes, reconnect edges, draw new ones, and comment on nodes (with `@mentions`); you hit **Send**; the edits flow back to the agent as revision instructions with exact node IDs — no prose, no ambiguity. It revises and re-renders. Repeat until you're happy.
+
+**It's not just for plans.** The agent can graph anything with a shape:
+
+- **A plan** it just proposed — review the architecture *before* any code is written.
+- **Your existing codebase** — "visualize the architecture" and actually see how it hangs together.
+- **A feature or subsystem** — map one slice of the system on its own.
+- **A refactor** — current vs. planned in a single before/after diff (solid = today, dashed = coming, struck-through = going).
 
 Works with any agent that can run a CLI and read its output — Claude Code, Cursor, Codex, …
 

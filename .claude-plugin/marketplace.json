@@ -1,6 +1,6 @@
 {
   "name": "archeyes",
-  "description": "ArchEyes — a diagram you talk back to. Edit your agent's plan and send structured feedback.",
+  "description": "ArchEyes — a diagram you talk back to. Visualize a plan, an existing codebase, or a feature, then send structured feedback to your agent.",
   "owner": { "name": "thisAAY", "url": "https://github.com/thisAAY" },
   "plugins": [
     {
