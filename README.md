@@ -1,10 +1,23 @@
-# ArchEyes
+<p align="center">
+  <img src="https://raw.githubusercontent.com/thisAAY/archeyes/main/assets/banner.png" alt="ArchEyes — a diagram you talk back to" width="100%">
+</p>
 
-**Bidirectional plan diagrams for AI coding agents.** The diagram isn't a picture you look at — it's an input device you edit.
+<p align="center">
+  <a href="https://www.npmjs.com/package/archeyes"><img src="https://img.shields.io/npm/v/archeyes?color=4d7cfe&label=npm" alt="npm"></a>
+  <img src="https://img.shields.io/badge/license-MIT-4d7cfe" alt="MIT">
+  <img src="https://img.shields.io/badge/node-%E2%89%A522-4d7cfe" alt="node >= 22">
+  <img src="https://img.shields.io/badge/agents-Claude%20Code%20%C2%B7%20Cursor%20%C2%B7%20any-6b7280" alt="works with any agent">
+</p>
 
-Works with any agent that can run a CLI and read its output (Claude Code, Cursor, Codex, …). The agent authors a graph, runs `archeyes review`, and reads your edits back as structured JSON.
+<p align="center"><b>A diagram you talk back to — edit your agent's plan, send structured feedback.</b></p>
 
-Every other tool in this space is one-way: plan in, picture out. ArchEyes closes the loop. The agent renders its plan as an interactive architecture graph; you drag nodes, reconnect edges, draw new ones, and comment on nodes (with `@mentions`); you hit **Send**; the structured edits flow back to the agent as revision instructions with exact node IDs — no prose, no ambiguity. It revises and re-renders. Repeat until you approve.
+Every other tool in this space is one-way: plan in, picture out. **ArchEyes closes the loop.** Your coding agent renders its plan as an interactive architecture graph; you drag nodes, reconnect edges, draw new ones, and comment on nodes (with `@mentions`); you hit **Send**; the edits flow back to the agent as revision instructions with exact node IDs — no prose, no ambiguity. It revises and re-renders. Repeat until you approve.
+
+Works with any agent that can run a CLI and read its output — Claude Code, Cursor, Codex, …
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/thisAAY/archeyes/main/assets/canvas.png" alt="ArchEyes review canvas — a diff-styled architecture graph with a comment, a reconnection, and a deletion pending in the Changes panel" width="100%">
+</p>
 
 ```
 plan / spec / codebase ──▶ agent authors plan-graph.json ──▶ archeyes review
@@ -66,6 +79,19 @@ Status reads by **border style** first (colorblind-safe), color second — with 
 | delete   | dotted + faded + strikethrough | red |
 
 Node **kind** is an icon (service, repository, datastore, adapter, …); **groups** are container regions.
+
+Opens in dark by default (it lives next to your terminal), with a light theme — and a first-run coach overlay that teaches the three gestures:
+
+<table>
+  <tr>
+    <td width="50%"><img src="https://raw.githubusercontent.com/thisAAY/archeyes/main/assets/canvas-light.png" alt="Light theme" width="100%"></td>
+    <td width="50%"><img src="https://raw.githubusercontent.com/thisAAY/archeyes/main/assets/first-run.png" alt="First-run coach overlay" width="100%"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Light theme</sub></td>
+    <td align="center"><sub>First-run coaching</sub></td>
+  </tr>
+</table>
 
 ## How it works
 
