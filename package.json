@@ -1,0 +1,58 @@
+{
+  "name": "archeyes",
+  "version": "0.1.0",
+  "description": "Bidirectional plan diagrams for AI coding agents — the diagram is an input device.",
+  "type": "module",
+  "license": "MIT",
+  "author": "thisAAY",
+  "homepage": "https://github.com/thisAAY/archeyes#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thisAAY/archeyes.git"
+  },
+  "bugs": {
+    "url": "https://github.com/thisAAY/archeyes/issues"
+  },
+  "keywords": [
+    "claude",
+    "claude-code",
+    "architecture",
+    "diagram",
+    "plan",
+    "react-flow",
+    "code-review",
+    "cli"
+  ],
+  "bin": {
+    "archeyes": "dist/cli/archeyes.js"
+  },
+  "files": [
+    "dist/cli",
+    "dist/ui",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test --experimental-strip-types test/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "gen:types": "json2ts -i schema/plan-graph.schema.json -o schema/plan-graph.types.ts --additionalProperties false && json2ts -i schema/feedback.schema.json -o schema/feedback.types.ts --additionalProperties false",
+    "build:cli": "esbuild cli/archeyes.ts cli/server.ts --bundle --platform=node --format=esm --outdir=dist/cli --external:ajv --external:ajv-formats --banner:js='#!/usr/bin/env node' && chmod +x dist/cli/archeyes.js",
+    "build:ui": "cd ui && npm install && npm run build",
+    "build": "npm run build:cli && npm run build:ui",
+    "prepublishOnly": "npm run build",
+    "archeyes": "node --experimental-strip-types cli/archeyes.ts"
+  },
+  "dependencies": {
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.2",
+    "esbuild": "^0.28.1",
+    "json-schema-to-typescript": "^15.0.4",
+    "typescript": "^7.0.2"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
