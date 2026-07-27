@@ -1,0 +1,33 @@
+/* ============================================================
+   ArchEyes — TYPOGRAPHY
+   Geist for UI/display. JetBrains Mono for paths, IDs, glyphs.
+   Tight, technical, small. UI base is 13px.
+   ============================================================ */
+:root {
+  --font-sans:"Geist","Geist Fallback",system-ui,sans-serif;
+  --font-mono:"JetBrains Mono","SFMono-Regular",ui-monospace,monospace;
+
+  /* type scale (px) — dense instrument, not marketing */
+  --fs-display:28px;   /* screen/empty-state titles */
+  --fs-h1:20px;        /* panel titles */
+  --fs-h2:16px;        /* section headings */
+  --fs-body:13px;      /* UI base */
+  --fs-node:12.5px;    /* node title */
+  --fs-label:12px;     /* labels, group tabs */
+  --fs-small:11px;     /* meta, chips */
+  --fs-mono:11px;      /* file paths */
+  --fs-micro:9px;      /* port hints, corner counts */
+
+  --fw-regular:400; /* @kind other */
+  --fw-medium:500; /* @kind other */
+  --fw-semibold:600; /* @kind other */
+  --fw-bold:700; /* @kind other */
+
+  --lh-tight:1.2; /* @kind other */
+  --lh-snug:1.35; /* @kind other */
+  --lh-normal:1.5; /* @kind other */
+  --ls-tight:-0.01em; /* @kind other */
+  --ls-normal:0; /* @kind other */
+  --ls-wide:0.02em; /* @kind other */
+  --ls-caps:0.08em; /* @kind other */
+}

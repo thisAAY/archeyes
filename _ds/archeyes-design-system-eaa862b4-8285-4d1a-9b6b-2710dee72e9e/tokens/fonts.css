@@ -1,0 +1,5 @@
+/* ArchEyes typefaces — loaded from Google Fonts CDN.
+   Geist   : engineered grotesk for all UI/display text.
+   JetBrains Mono : file paths, IDs, code, status glyphs.
+   No substitution — both faces are the real families. */
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
