@@ -1,0 +1,5 @@
+# Default owner for everything in the repo.
+* @thisAAY
+
+# The protocol is the product — extra eyes on schema changes.
+/schema/ @thisAAY
