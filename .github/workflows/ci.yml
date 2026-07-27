@@ -69,6 +69,13 @@ jobs:
       - name: Build UI into dist/ui (shipped in the npm tarball)
         working-directory: ui
         run: npm ci && npm run build
-      - run: npm publish --provenance --access public
+      - name: Publish to npm (skips gracefully if NPM_TOKEN is unset)
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ -z "$NODE_AUTH_TOKEN" ]; then
+            echo "NPM_TOKEN not set — skipping automated publish."
+            echo "Publish manually from a clean checkout: npm publish (see CLAUDE.md)."
+            exit 0
+          fi
+          npm publish --provenance --access public
