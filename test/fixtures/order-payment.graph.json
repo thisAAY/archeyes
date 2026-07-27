@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "title": "Split payment flow out of OrderService",
+  "groups": [
+    { "id": "domain", "label": "Domain layer" },
+    { "id": "infra", "label": "Infrastructure" }
+  ],
+  "nodes": [
+    { "id": "OrderService", "label": "OrderService", "kind": "service", "group": "domain", "status": "modify", "files": ["src/services/order.ts"], "description": "Orchestrates order lifecycle; payment logic moving out" },
+    { "id": "PaymentService", "label": "PaymentService", "kind": "service", "group": "domain", "status": "new", "files": ["src/services/payment.ts"] },
+    { "id": "PaymentRepo", "label": "PaymentRepo", "kind": "repository", "group": "domain", "status": "new", "files": ["src/repos/payment.ts"] },
+    { "id": "OrderRepo", "label": "OrderRepo", "kind": "repository", "group": "domain", "status": "existing", "files": ["src/repos/order.ts"] },
+    { "id": "DB", "label": "Postgres", "kind": "datastore", "group": "infra", "status": "existing", "files": [] },
+    { "id": "LegacyPayAdapter", "label": "LegacyPayAdapter", "kind": "adapter", "group": "infra", "status": "delete", "files": ["src/legacy/pay.ts"] }
+  ],
+  "edges": [
+    { "id": "e1", "from": "OrderService", "to": "DB", "kind": "calls", "status": "existing" },
+    { "id": "e2", "from": "OrderService", "to": "LegacyPayAdapter", "kind": "calls", "status": "delete" }
+  ]
+}

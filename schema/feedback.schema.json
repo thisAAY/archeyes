@@ -1,0 +1,89 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://archeyes.dev/schema/feedback.json",
+  "title": "Feedback",
+  "description": "The structured diff the UI emits on SEND/APPROVE/CANCEL. Printed verbatim to the CLI's stdout (and nothing else) so the agent can parse it. Every entry carries node/edge IDs — no prose disambiguation needed.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["action"],
+  "properties": {
+    "action": {
+      "type": "string",
+      "enum": ["revise", "approve", "cancel"],
+      "description": "revise = apply edits and re-render · approve = apply pending edits as final touch-ups, loop ends · cancel = agent stops the loop, keeps plan as-is"
+    },
+    "comments": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["nodeId", "text"],
+        "properties": {
+          "nodeId": { "type": "string", "minLength": 1 },
+          "text": { "type": "string", "minLength": 1, "description": "May contain @NodeId mentions" }
+        }
+      }
+    },
+    "reconnected": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["edgeId", "end", "was", "now"],
+        "properties": {
+          "edgeId": { "type": "string", "minLength": 1 },
+          "end": { "type": "string", "enum": ["source", "target"], "description": "Which endpoint the dev re-dragged" },
+          "was": { "type": "string", "minLength": 1, "description": "Node id the endpoint pointed at before" },
+          "now": { "type": "string", "minLength": 1, "description": "Node id the endpoint points at now" }
+        }
+      }
+    },
+    "deleted": {
+      "type": "object",
+      "additionalProperties": false,
+      "default": { "nodes": [], "edges": [] },
+      "properties": {
+        "nodes": { "type": "array", "items": { "type": "string" }, "default": [] },
+        "edges": { "type": "array", "items": { "type": "string" }, "default": [] }
+      }
+    },
+    "added": {
+      "type": "object",
+      "additionalProperties": false,
+      "default": { "edges": [] },
+      "description": "V1 accepts new EDGES only. New nodes are requested via comments (e.g. 'add a @PaymentRepo below this').",
+      "properties": {
+        "edges": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["from", "to"],
+            "properties": {
+              "from": { "type": "string", "minLength": 1 },
+              "to": { "type": "string", "minLength": 1 },
+              "kind": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "moved": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["nodeId", "toGroup"],
+        "properties": {
+          "nodeId": { "type": "string", "minLength": 1 },
+          "toGroup": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "generalNote": { "type": "string", "description": "Free-text feedback that isn't node-specific" }
+  }
+}
