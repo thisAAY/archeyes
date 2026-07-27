@@ -1,6 +1,6 @@
 {
   "name": "archeyes",
-  "description": "ArchEyes — bidirectional plan diagrams for AI coding agents.",
+  "description": "ArchEyes — a diagram you talk back to. Edit your agent's plan and send structured feedback.",
   "owner": { "name": "thisAAY", "url": "https://github.com/thisAAY" },
   "plugins": [
     {

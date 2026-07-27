@@ -2,7 +2,7 @@
   "name": "archeyes",
   "displayName": "ArchEyes",
   "version": "0.1.0",
-  "description": "Bidirectional plan diagrams for AI coding agents — render a plan as an interactive architecture graph, edit it directly (drag, reconnect, comment), and feed the structured edits back to the agent.",
+  "description": "A diagram you talk back to — render your agent's plan as an interactive architecture graph, edit it directly (drag, reconnect, comment), and send the structured edits back.",
   "author": { "name": "thisAAY", "url": "https://github.com/thisAAY" },
   "homepage": "https://github.com/thisAAY/archeyes",
   "repository": "https://github.com/thisAAY/archeyes",
