@@ -86,7 +86,10 @@ collapse detail into groups. A graph you can read at a glance beats a complete-b
   "comments":     [{ "nodeId": "OrderService", "text": "move token refresh into @PaymentService" }],
   "edgeComments": [{ "edgeId": "e1", "text": "this read/write should go through @OrderRepo, not the DB directly" }],
   "reconnected":  [{ "edgeId": "e1", "end": "target", "was": "DB", "now": "OrderRepo" }],
-  "added":       { "edges": [{ "from": "PaymentService", "to": "PaymentRepo" }] },
+  "added":       {
+    "nodes": [{ "tempId": "new:1", "label": "PricingService", "kind": "service", "group": "domain", "description": "owns price calc" }],
+    "edges": [{ "from": "OrderService", "to": "new:1" }, { "from": "PaymentService", "to": "PaymentRepo" }]
+  },
   "deleted":     { "nodes": ["LegacyPayAdapter"], "edges": [] },
   "moved":       [{ "nodeId": "PaymentRepo", "toGroup": "infra" }],
   "generalNote": "optional free-text"
@@ -104,13 +107,21 @@ What each edit MEANS architecturally:
   (`source`|`target`) of `edgeId` should now point at `now` instead of `was`. Treat it as a
   decision: "this dependency should target `now`, not `was`." Update the edge in the graph
   and change the code plan to match (e.g. call the repository, not the DB directly).
-- **added.edges** — a new dependency the developer drew. V1 sends edges only. Add it and
-  reflect the new coupling in the plan.
+- **added.nodes** — a new component the developer drew on the canvas. Each carries a
+  client-side `tempId` (e.g. `"new:1"`), a `label`, a `kind`, and optional `group`/`description`.
+  Create a real node for each: **assign it a real, stable id** (do NOT keep `new:1`), honor the
+  label/kind/group, and fold the component into the code plan. In your revised `plan-graph.json`,
+  set the new node's `status` to `"new"`.
+- **added.edges** — new dependencies the developer drew. An endpoint (`from`/`to`) may be a real
+  node id OR an added-node `tempId` — resolve each tempId to the real id you assigned above, then
+  add the edge and reflect the new coupling in the plan.
 - **deleted** — nodes/edges the developer wants gone. Remove them and remove the
   corresponding code from the plan.
 - **moved** — a node reassigned to a different group/layer. Re-home it.
-- New **nodes** are requested via comments (e.g. "add a @PaymentRepo below this"), because
-  V1's canvas draws edges but not nodes. Create the node when a comment asks for one.
+
+When you create nodes from `added.nodes`, **echo the tempId → real-id mapping** to the developer
+in your terminal reply (e.g. `new:1 → PricingService`) so the next render shows the real name and
+they can see their node was understood.
 
 After revising, rewrite BOTH `plan-graph.json` and the prose plan so they stay in sync,
 then re-run `archeyes review plan-graph.json`.

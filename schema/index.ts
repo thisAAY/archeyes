@@ -89,8 +89,12 @@ export function validateFeedback(data: unknown): ValidationResult<Feedback> {
 
 /**
  * Every node id a feedback envelope points at (comments, reconnect endpoints,
- * added-edge endpoints, moves). Nodes the dev explicitly deleted are excluded —
- * those are *supposed* to be gone in the next graph.
+ * added-edge endpoints, moves). Two classes of id are *supposed* to be absent
+ * from the next graph, so they're excluded to avoid false orphan-warnings:
+ *   - nodes the dev explicitly deleted (gone on purpose), and
+ *   - added-node tempIds (e.g. "new:1"): the dev drew these this round; the agent
+ *     replaces each tempId with a real node id, so an added edge pointing at a
+ *     tempId will never find that tempId in the revised graph — by design.
  */
 export function referencedNodeIds(feedback: Feedback): string[] {
   const refs = new Set<string>();
@@ -105,6 +109,7 @@ export function referencedNodeIds(feedback: Feedback): string[] {
   }
   for (const m of feedback.moved ?? []) refs.add(m.nodeId);
   for (const del of feedback.deleted?.nodes ?? []) refs.delete(del);
+  for (const n of feedback.added?.nodes ?? []) refs.delete(n.tempId);
   return [...refs];
 }
 

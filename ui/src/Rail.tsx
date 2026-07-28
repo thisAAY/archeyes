@@ -99,7 +99,14 @@ function Changes(p: RailProps) {
             primary={<>Reconnect <span className="mono">{labelOf(r.was)} → {labelOf(r.now)}</span></>} detail={`${r.end} endpoint`} />
         ))}
       </Group>
-      <Group show={pending.added.length > 0} icon={<Plus size={12} />} label="Additions" n={pending.added.length}>
+      <Group show={pending.addedNodes.length > 0} icon={<Plus size={12} />} label="New nodes" n={pending.addedNodes.length}>
+        {pending.addedNodes.map((a, i) => (
+          <Row key={a.tempId} onX={() => removeEdit({ kind: "addedNode", index: i })}
+            primary={<>Add <b>{a.label}</b> <span className="mono" style={{ color: "var(--text-3)" }}>{a.kind}</span></>}
+            detail={a.description} />
+        ))}
+      </Group>
+      <Group show={pending.added.length > 0} icon={<Plus size={12} />} label="New edges" n={pending.added.length}>
         {pending.added.map((e, i) => (
           <Row key={i} onX={() => removeEdit({ kind: "added", index: i })} mono
             primary={<>Add edge <span className="mono">{labelOf(e.from)} → {labelOf(e.to)}</span></>} />

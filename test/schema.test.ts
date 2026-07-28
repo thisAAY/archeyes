@@ -105,9 +105,18 @@ test("feedback: reconnected.end must be source|target", () => {
   assert.equal(r.valid, false);
 });
 
-test("feedback: added.nodes is rejected (V1 = edges only)", () => {
-  const r = validateFeedback({ action: "revise", added: { nodes: [{ id: "X" }] } as any });
-  assert.equal(r.valid, false);
+test("feedback: a well-formed added.node is accepted (tempId + label + kind)", () => {
+  const r = validateFeedback({
+    action: "revise",
+    added: { nodes: [{ tempId: "new:1", label: "PricingCache", kind: "service" }] },
+  });
+  assert.equal(r.valid, true, r.errors.join("; "));
+});
+
+test("feedback: a malformed added.node is rejected (missing required fields / bad kind)", () => {
+  assert.equal(validateFeedback({ action: "revise", added: { nodes: [{ label: "X" }] } as any }).valid, false, "missing tempId + kind");
+  assert.equal(validateFeedback({ action: "revise", added: { nodes: [{ tempId: "new:1", label: "X", kind: "widget" }] } as any }).valid, false, "kind not in enum");
+  assert.equal(validateFeedback({ action: "revise", added: { nodes: [{ tempId: "new:1", label: "X", kind: "service", id: "oops" }] } as any }).valid, false, "additionalProperties");
 });
 
 test("feedback: edgeComments envelope is valid", () => {
