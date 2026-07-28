@@ -27,10 +27,18 @@ export interface BuiltGraph {
 }
 
 export function buildGraph(graph: PlanGraph, saved: LayoutMap): BuiltGraph {
-  const g = new dagre.graphlib.Graph();
+  // Compound layout: each node is parented to its group's cluster so dagre keeps
+  // group members together. Without this, dagre ignores `group` and members scatter
+  // across ranks — the post-hoc group boxes below then overlap into a hairball.
+  const g = new dagre.graphlib.Graph({ compound: true });
   g.setGraph({ rankdir: "TB", nodesep: 60, ranksep: 90 });
   g.setDefaultEdgeLabel(() => ({}));
-  for (const n of graph.nodes) g.setNode(n.id, { width: NODE_W, height: NODE_H });
+  const groupIds = new Set((graph.groups ?? []).map((grp) => grp.id));
+  for (const id of groupIds) g.setNode(`cluster:${id}`, {});
+  for (const n of graph.nodes) {
+    g.setNode(n.id, { width: NODE_W, height: NODE_H });
+    if (n.group && groupIds.has(n.group)) g.setParent(n.id, `cluster:${n.group}`);
+  }
   for (const e of graph.edges) g.setEdge(e.from, e.to);
   dagre.layout(g);
 

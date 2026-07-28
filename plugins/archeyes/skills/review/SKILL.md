@@ -19,6 +19,13 @@ until they approve.
 from whatever is at hand: a fresh plan-mode plan, an existing markdown tech spec, the
 codebase itself, or current + planned together (which powers the before/after diff).
 
+**Don't interview the developer first.** The graph is the question — render your best
+guess and let them fix it on the canvas. That's faster and more precise than terminal
+Q&A. The one thing the canvas *can't* express as an edit is a framing choice: **altitude**
+(system vs service vs class level) and **before/after diff vs single-state graph**. Pick one,
+state which you picked in your terminal message, and ask up front only when you're genuinely
+torn — fixing altitude visually means the developer deleting and merging a dozen nodes by hand.
+
 ## The loop
 
 1. **Author the graph.** Write `plan-graph.json` (schema below). Keep your prose plan too —
@@ -75,8 +82,14 @@ renamed something you shouldn't have; reconcile before re-rendering.
   the source invokes on the target (the edge-analog of `node.files[]`). The dev sees all three by
   clicking the arrow. Author them — a bare arrow with no `description`/`calls` is a weaker diagram.
 
-**Granularity.** Class/module-level for a feature plan. Cap at ~30 nodes — beyond that,
-collapse detail into groups. A graph you can read at a glance beats a complete-but-dense one.
+**Granularity.** Class/module-level for a feature plan. Aim for ~30 nodes or fewer;
+beyond that, collapse detail into groups. Go higher only when the plan genuinely can't
+be expressed with fewer moving parts. A graph you can read at a glance beats a
+complete-but-dense one.
+
+**Labels are short identifiers** — `PaymentService`, not "the service that handles
+payments". Node boxes are fixed-width and truncate long labels. Put the sentence in
+`description`, the paths in `files`, the methods in `calls`.
 
 ## Interpreting the feedback envelope
 
