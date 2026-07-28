@@ -7,7 +7,7 @@
       "name": "archeyes",
       "source": "./plugins/archeyes",
       "description": "Render an implementation plan, tech spec, or codebase as an interactive architecture graph you edit directly; the structured edits flow back to the agent. Skill: /archeyes:review (needs `npx archeyes` — install `archeyes` from npm).",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "category": "workflow",
       "tags": ["architecture", "diagram", "plan", "review"]
     }
