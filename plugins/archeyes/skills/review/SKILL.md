@@ -55,7 +55,9 @@ renamed something you shouldn't have; reconcile before re-rendering.
       "status": "new", "files": ["src/services/payment.ts"] }
   ],
   "edges": [
-    { "id": "e1", "from": "OrderService", "to": "DB", "kind": "calls", "status": "existing" }
+    { "id": "e1", "from": "OrderService", "to": "DB", "kind": "reads / writes", "status": "existing",
+      "description": "Reads and writes order rows through the shared Postgres pool.",
+      "calls": ["store.query<Order>(sql, params)", "store.tx(fn)"] }
   ]
 }
 ```
@@ -68,6 +70,10 @@ renamed something you shouldn't have; reconcile before re-rendering.
   changing `modify`, what you're removing `delete`.
 - Every `edge.from`/`edge.to` must be a real node `id`; every `node.group` a real group `id`.
   The CLI validates this and refuses an inconsistent graph.
+- On an edge, `kind` is the short "used for" verb (rendered on the arrow); `description` is the
+  free-text "what the source uses the target for"; `calls[]` lists the specific methods/functions
+  the source invokes on the target (the edge-analog of `node.files[]`). The dev sees all three by
+  clicking the arrow. Author them — a bare arrow with no `description`/`calls` is a weaker diagram.
 
 **Granularity.** Class/module-level for a feature plan. Cap at ~30 nodes — beyond that,
 collapse detail into groups. A graph you can read at a glance beats a complete-but-dense one.
@@ -77,8 +83,9 @@ collapse detail into groups. A graph you can read at a glance beats a complete-b
 ```json
 {
   "action": "revise",
-  "comments":    [{ "nodeId": "OrderService", "text": "move token refresh into @PaymentService" }],
-  "reconnected": [{ "edgeId": "e1", "end": "target", "was": "DB", "now": "OrderRepo" }],
+  "comments":     [{ "nodeId": "OrderService", "text": "move token refresh into @PaymentService" }],
+  "edgeComments": [{ "edgeId": "e1", "text": "this read/write should go through @OrderRepo, not the DB directly" }],
+  "reconnected":  [{ "edgeId": "e1", "end": "target", "was": "DB", "now": "OrderRepo" }],
   "added":       { "edges": [{ "from": "PaymentService", "to": "PaymentRepo" }] },
   "deleted":     { "nodes": ["LegacyPayAdapter"], "edges": [] },
   "moved":       [{ "nodeId": "PaymentRepo", "toGroup": "infra" }],
@@ -90,6 +97,9 @@ What each edit MEANS architecturally:
 
 - **comments** — the developer's intent for that node. `@Name` mentions reference other
   nodes by id. This is the richest signal; read it as a direct instruction.
+- **edgeComments** — the developer's intent for that *connection* (left via the edge inspector).
+  `{edgeId, text}`, `@Name` mentions allowed. Read it as an instruction about the relationship —
+  revise the edge's `kind`/`description`/`calls` and the code plan to match.
 - **reconnected** — an edge's endpoint was re-dragged. `{edgeId, end, was, now}`: the `end`
   (`source`|`target`) of `edgeId` should now point at `now` instead of `was`. Treat it as a
   decision: "this dependency should target `now`, not `was`." Update the edge in the graph

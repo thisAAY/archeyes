@@ -74,12 +74,11 @@ export function buildGraph(graph: PlanGraph, saved: LayoutMap): BuiltGraph {
 
   const edges: RFEdge[] = graph.edges.map((e) => ({
     id: e.id,
+    type: "arch", // custom edge: pill label with diff glyph + click-to-inspect
     source: e.from,
     target: e.to,
-    data: { status: e.status },
-    label: e.kind ?? "",
-    labelStyle: { fill: "#8b98ad", fontSize: 10 },
-    labelBgStyle: { fill: "#131722" },
+    // kind/description/calls ride along so the edge inspector reads them off data
+    data: { status: e.status, kind: e.kind ?? "", description: e.description, calls: e.calls },
     reconnectable: true,
     ...edgeStyle(e.status),
   }));

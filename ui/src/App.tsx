@@ -13,6 +13,7 @@ import {
   type Edge,
   type Node,
   type NodeTypes,
+  type EdgeTypes,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import "./styles.css";
@@ -20,17 +21,19 @@ import { MousePointer2, MessageSquarePlus, Sun, Moon, X, Send, GitCompareArrows 
 import { fetchGraph, fetchLayout, saveLayout, sendFeedback, token } from "./api.ts";
 import { buildGraph, edgeStyle } from "./layout.ts";
 import { ArchNode, GroupNode } from "./GraphNode.tsx";
+import { ArchEdge } from "./GraphEdge.tsx";
 import { Rail } from "./Rail.tsx";
 import { KindIcon, Button, ArchEyesLogo } from "./ui.tsx";
 import { EDGE_VAR } from "./diff.ts";
 import {
-  addComment as addCommentE, addEdge as addEdgeE, empty, reconnect as reconnectE,
+  addComment as addCommentE, addEdgeComment as addEdgeCommentE, addEdge as addEdgeE, empty, reconnect as reconnectE,
   removeEdit as removeEditE, toEnvelope, toggleDeleteNode as toggleDeleteNodeE, toggleDeleteEdge as toggleDeleteEdgeE,
 } from "./pending.ts";
 import type { EditRef, PendingEdits } from "./pending.ts";
-import type { Feedback, GraphNodeData, PlanGraph, Status } from "./protocol.ts";
+import type { Feedback, GraphNodeData, GraphEdgeData, PlanGraph, Status } from "./protocol.ts";
 
 const nodeTypes: NodeTypes = { arch: ArchNode, archgroup: GroupNode };
+const edgeTypes: EdgeTypes = { arch: ArchEdge };
 const STATUS_MINI: Record<string, string> = {
   existing: "var(--st-existing)", new: "var(--st-new-line)", modify: "var(--st-modified-line)", delete: "var(--st-deleted-line)",
 };
@@ -44,7 +47,8 @@ export default function App() {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [pending, setPending] = useState<PendingEdits>(empty());
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  // one source of truth for what the inspector shows — a node OR an edge, never both
+  const [selection, setSelection] = useState<{ type: "node" | "edge"; id: string } | null>(null);
   const [tab, setTab] = useState<"changes" | "inspector">("changes");
   const [busy, setBusy] = useState(false);
   const [sentAction, setSentAction] = useState<Feedback["action"] | null>(null);
@@ -69,9 +73,11 @@ export default function App() {
   }, [setNodes, setEdges]);
 
   const nodeById = useMemo(() => new Map((graph?.nodes ?? []).map((n) => [n.id, n])), [graph]);
+  const edgeById = useMemo(() => new Map((graph?.edges ?? []).map((e) => [e.id, e])), [graph]);
   const allNodeIds = useMemo(() => (graph?.nodes ?? []).map((n) => n.id), [graph]);
   const labelOf = useCallback((id: string) => nodeById.get(id)?.label ?? id, [nodeById]);
-  const selected: GraphNodeData | null = selectedId ? nodeById.get(selectedId) ?? null : null;
+  const selectedNode: GraphNodeData | null = selection?.type === "node" ? nodeById.get(selection.id) ?? null : null;
+  const selectedEdge: GraphEdgeData | null = selection?.type === "edge" ? edgeById.get(selection.id) ?? null : null;
 
   const commentCounts = useMemo(() => {
     const m = new Map<string, number>();
@@ -88,7 +94,8 @@ export default function App() {
   useEffect(() => {
     setEdges((es) => es.map((e) => {
       const st = ((e.data as { status?: Status } | undefined)?.status ?? "existing");
-      return { ...e, ...edgeStyle(st, pending.deletedEdges.includes(e.id)) };
+      const del = pending.deletedEdges.includes(e.id);
+      return { ...e, data: { ...(e.data as object), pendingDelete: del }, ...edgeStyle(st, del) };
     }));
   }, [pending.deletedEdges, setEdges]);
 
@@ -113,12 +120,20 @@ export default function App() {
     if (tool === "comment") {
       setComposer({ id: node.id, x: e.clientX, y: e.clientY });
     } else {
-      setSelectedId(node.id); setTab("inspector");
+      setSelection({ type: "node", id: node.id }); setTab("inspector");
     }
   }, [tool]);
 
+  // click an arrow → inspect the connection. Tool-independent: edges aren't part
+  // of the comment-composer flow, the edge inspector carries its own feedback box.
+  const onEdgeClick = useCallback((_: unknown, edge: Edge) => {
+    setComposer(null);
+    setSelection({ type: "edge", id: edge.id }); setTab("inspector");
+  }, []);
+
   const removeEdit = useCallback((ref: EditRef) => setPending((p) => removeEditE(p, ref)), []);
   const addComment = useCallback((nodeId: string, text: string) => setPending((p) => addCommentE(p, nodeId, text)), []);
+  const addEdgeComment = useCallback((edgeId: string, text: string) => setPending((p) => addEdgeCommentE(p, edgeId, text)), []);
   const toggleDeleteNode = useCallback((id: string) => setPending((p) => toggleDeleteNodeE(p, id)), []);
 
   const submit = useCallback(async (action: Feedback["action"]) => {
@@ -172,10 +187,10 @@ export default function App() {
           )}
 
           <ReactFlow
-            nodes={nodes} edges={edges} nodeTypes={nodeTypes}
+            nodes={nodes} edges={edges} nodeTypes={nodeTypes} edgeTypes={edgeTypes}
             onNodesChange={onNodesChange} onEdgesChange={onEdgesChange}
             onNodeDragStop={onNodeDragStop} onConnect={onConnect} onReconnect={onReconnect}
-            onEdgeDoubleClick={onEdgeDoubleClick} onNodeClick={onNodeClick}
+            onEdgeDoubleClick={onEdgeDoubleClick} onEdgeClick={onEdgeClick} onNodeClick={onNodeClick}
             onPaneClick={() => setComposer(null)}
             deleteKeyCode={null} fitView proOptions={{ hideAttribution: true }}
             minZoom={0.2}
@@ -207,8 +222,9 @@ export default function App() {
 
         <Rail
           tab={tab} setTab={setTab} pending={pending} removeEdit={removeEdit}
-          selected={selected} allNodeIds={allNodeIds} labelOf={labelOf}
-          addComment={addComment} toggleDeleteNode={toggleDeleteNode}
+          selectedNode={selectedNode} selectedEdge={selectedEdge}
+          nodeById={nodeById} edgeById={edgeById} allNodeIds={allNodeIds} labelOf={labelOf}
+          addComment={addComment} addEdgeComment={addEdgeComment} toggleDeleteNode={toggleDeleteNode}
           onSend={() => submit("revise")} onApprove={() => submit("approve")} onCancel={() => submit("cancel")}
           busy={busy}
         />
@@ -218,7 +234,7 @@ export default function App() {
 }
 
 function countLabel(p: PendingEdits): number {
-  return p.comments.length + p.reconnected.length + p.added.length + p.deletedNodes.length + p.deletedEdges.length + p.moved.length;
+  return p.comments.length + p.edgeComments.length + p.reconnected.length + p.added.length + p.deletedNodes.length + p.deletedEdges.length + p.moved.length;
 }
 
 function Shell({ children }: { children: React.ReactNode }) {

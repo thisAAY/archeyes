@@ -8,6 +8,7 @@ import {
   empty,
   count,
   addComment,
+  addEdgeComment,
   reconnect,
   addEdge,
   toggleDeleteNode,
@@ -38,6 +39,33 @@ test("accumulates each edit type and builds a schema-valid revise envelope", () 
   assert.deepEqual(fb.added!.edges, [{ from: "PaymentService", to: "PaymentRepo", kind: undefined }]);
   assert.deepEqual(fb.deleted!.nodes, ["LegacyPayAdapter"]);
   assert.equal(fb.generalNote, "looks close"); // trimmed
+});
+
+test("addEdgeComment accumulates, counts, and serializes to edgeComments", () => {
+  let p = empty();
+  p = addEdgeComment(p, "e1", "route this through @OrderRepo");
+  p = addEdgeComment(p, "e2", "drop this call");
+  assert.equal(count(p), 2);
+  const fb = toEnvelope(p, "revise");
+  assert.equal(validateFeedback(fb).valid, true);
+  assert.deepEqual(fb.edgeComments, [
+    { edgeId: "e1", text: "route this through @OrderRepo" },
+    { edgeId: "e2", text: "drop this call" },
+  ]);
+});
+
+test("edgeComments are omitted from the envelope when empty (lean JSON)", () => {
+  const fb = toEnvelope(addComment(empty(), "A", "hi"), "revise");
+  assert.ok(!("edgeComments" in fb));
+});
+
+test("per-edit undo drops exactly one edge comment", () => {
+  let p = empty();
+  p = addEdgeComment(p, "e1", "one");
+  p = addEdgeComment(p, "e2", "two");
+  p = removeEdit(p, { kind: "edgeComment", index: 0 });
+  assert.equal(p.edgeComments.length, 1);
+  assert.equal(p.edgeComments[0].edgeId, "e2");
 });
 
 test("reconnect keeps only the latest edit per (edge,end)", () => {

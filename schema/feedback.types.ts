@@ -20,6 +20,16 @@ export interface Feedback {
      */
     text: string;
   }[];
+  /**
+   * Feedback the developer left on a connection (via the edge inspector). Edge-scoped counterpart of comments[]; kept separate so the agent reads a dedicated edge stream.
+   */
+  edgeComments?: {
+    edgeId: string;
+    /**
+     * May contain @NodeId mentions
+     */
+    text: string;
+  }[];
   reconnected?: {
     edgeId: string;
     /**

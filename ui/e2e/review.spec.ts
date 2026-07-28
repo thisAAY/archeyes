@@ -62,6 +62,35 @@ test("renders the authored graph with diff-styled nodes", async ({ page }) => {
   await expect(payment.locator(".ax-status-pill")).toContainText("new");
 });
 
+test("edge labels carry the diff glyph (+ new, none for existing)", async ({ page }) => {
+  await page.goto(baseURL);
+  // e3 PaymentService→PaymentRepo is "new" → "+" glyph
+  await expect(page.locator(".ax-edge-label", { hasText: "persists" })).toContainText("+");
+  // e1 is "existing" → no glyph
+  const existing = page.locator(".ax-edge-label", { hasText: "reads / writes" });
+  await expect(existing).toBeVisible();
+  await expect(existing).not.toContainText("+");
+});
+
+test("click an edge → edge inspector shows connection, description, calls; feedback lands in the tray", async ({ page }) => {
+  await page.goto(baseURL);
+  // click the fat interaction path of e1 (OrderService → Postgres)
+  await page.locator('.react-flow__edge[data-id="e1"] .react-flow__edge-interaction').click({ force: true });
+
+  const panel = page.locator(".ax-panel");
+  await expect(panel.getByText("Connection")).toBeVisible();
+  await expect(panel.getByText("What it's used for")).toBeVisible();
+  await expect(panel.getByText(/shared Postgres pool/)).toBeVisible(); // edge.description
+  await expect(panel.getByText("store.query<Order>(sql, params)")).toBeVisible(); // edge.calls[]
+
+  // leave feedback on the connection → it collects in the Changes tray (no Send here)
+  await panel.getByPlaceholder(/Add feedback for the agent/).fill("route this through @OrderRepo");
+  await panel.getByRole("button", { name: "Add comment" }).click();
+  await expect(page.locator(".ax-tab-badge")).toHaveText("1");
+  await panel.getByRole("button", { name: /Changes/ }).click();
+  await expect(panel.getByText("Connection notes")).toBeVisible();
+});
+
 test("comment on a node → Send → feedback envelope carries it", async ({ page }) => {
   await page.goto(baseURL);
   await page.locator(".ax-node", { hasText: "OrderService" }).click(); // selects → Inspector tab

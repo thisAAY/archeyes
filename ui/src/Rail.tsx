@@ -1,19 +1,23 @@
 import { useMemo, useState } from "react";
-import { MessageSquare, GitCompare, Plus, Trash2, Send, Check, X, Pencil } from "lucide-react";
+import { MessageSquare, GitCompare, Plus, Trash2, Send, Check, X, Pencil, ArrowRight, Waypoints } from "lucide-react";
 import { count } from "./pending.ts";
 import type { EditRef, PendingEdits } from "./pending.ts";
 import { KindIcon, StatusPill, Button } from "./ui.tsx";
-import type { GraphNodeData } from "./protocol.ts";
+import type { GraphNodeData, GraphEdgeData } from "./protocol.ts";
 
 interface RailProps {
   tab: "changes" | "inspector";
   setTab: (t: "changes" | "inspector") => void;
   pending: PendingEdits;
   removeEdit: (ref: EditRef) => void;
-  selected: GraphNodeData | null;
+  selectedNode: GraphNodeData | null;
+  selectedEdge: GraphEdgeData | null;
+  nodeById: Map<string, GraphNodeData>;
+  edgeById: Map<string, GraphEdgeData>;
   allNodeIds: string[];
   labelOf: (id: string) => string;
   addComment: (nodeId: string, text: string) => void;
+  addEdgeComment: (edgeId: string, text: string) => void;
   toggleDeleteNode: (id: string) => void;
   onSend: () => void;
   onApprove: () => void;
@@ -31,17 +35,18 @@ export function Rail(p: RailProps) {
         </button>
         <button
           className={`ax-tab${p.tab === "inspector" ? " active" : ""}`}
-          disabled={!p.selected}
-          onClick={() => p.selected && p.setTab("inspector")}
+          disabled={!p.selectedNode && !p.selectedEdge}
+          onClick={() => (p.selectedNode || p.selectedEdge) && p.setTab("inspector")}
         >
           Inspector
         </button>
       </div>
 
       <div className="ax-panel-body">
-        {p.tab === "changes" ? <Changes {...p} /> : p.selected ? <Inspector {...p} /> : (
-          <div className="ax-empty-panel"><div className="d">Select a node on the canvas to inspect it.</div></div>
-        )}
+        {p.tab === "changes" ? <Changes {...p} />
+          : p.selectedEdge ? <EdgeInspector {...p} />
+          : p.selectedNode ? <Inspector {...p} />
+          : <div className="ax-empty-panel"><div className="d">Select a node or a connection on the canvas to inspect it.</div></div>}
       </div>
 
       <div className="ax-panel-foot">
@@ -60,7 +65,11 @@ export function Rail(p: RailProps) {
 }
 
 function Changes(p: RailProps) {
-  const { pending, removeEdit, labelOf } = p;
+  const { pending, removeEdit, labelOf, edgeById } = p;
+  const edgeLabel = (edgeId: string) => {
+    const e = edgeById.get(edgeId);
+    return e ? `${labelOf(e.from)} → ${labelOf(e.to)}` : edgeId;
+  };
   if (count(pending) === 0) {
     return (
       <div className="ax-empty-panel">
@@ -76,6 +85,12 @@ function Changes(p: RailProps) {
         {pending.comments.map((c, i) => (
           <Row key={i} onX={() => removeEdit({ kind: "comment", index: i })}
             primary={<>Comment on <b>{labelOf(c.nodeId)}</b></>} detail={c.text} />
+        ))}
+      </Group>
+      <Group show={pending.edgeComments.length > 0} icon={<Waypoints size={12} />} label="Connection notes" n={pending.edgeComments.length}>
+        {pending.edgeComments.map((c, i) => (
+          <Row key={i} onX={() => removeEdit({ kind: "edgeComment", index: i })}
+            primary={<>Note on <span className="mono">{edgeLabel(c.edgeId)}</span></>} detail={c.text} />
         ))}
       </Group>
       <Group show={pending.reconnected.length > 0} icon={<GitCompare size={12} />} label="Reconnections" n={pending.reconnected.length}>
@@ -122,7 +137,7 @@ function Row({ primary, detail, onX }: { primary: React.ReactNode; detail?: stri
 }
 
 function Inspector(p: RailProps) {
-  const node = p.selected!;
+  const node = p.selectedNode!;
   const marked = p.pending.deletedNodes.includes(node.id);
   return (
     <div>
@@ -154,6 +169,59 @@ function Inspector(p: RailProps) {
         <Button variant="ghost" size="sm" onClick={() => p.toggleDeleteNode(node.id)} style={{ color: marked ? "var(--st-deleted)" : undefined }}>
           <Trash2 size={13} /> {marked ? "Undo delete" : "Mark for deletion"}
         </Button>
+      </div>
+    </div>
+  );
+}
+
+function EdgeInspector(p: RailProps) {
+  const edge = p.selectedEdge!;
+  const from = p.nodeById.get(edge.from);
+  const to = p.nodeById.get(edge.to);
+  const calls = edge.calls ?? [];
+  const deleted = edge.status === "delete";
+  const endpoint = (n: GraphNodeData | undefined, id: string, role: string, arrow: boolean) => (
+    <div className="ax-edge-endpoint">
+      <span className="ax-edge-arrow">{arrow ? <ArrowRight size={13} /> : null}</span>
+      <KindIcon kind={n?.kind ?? "other"} size="sm" />
+      <div style={{ minWidth: 0, flex: 1 }}>
+        <div className="t">{n?.label ?? id}</div>
+        {n?.files?.[0] && <div className="p">{n.files[0]}</div>}
+      </div>
+      <span className="ax-field-label">{role}</span>
+    </div>
+  );
+  return (
+    <div>
+      <div className="ax-insp-sec pad">
+        <span className="ax-field-label">Connection</span>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          {endpoint(from, edge.from, "Source", false)}
+          {endpoint(to, edge.to, "Target", true)}
+        </div>
+      </div>
+      <div className="ax-insp-sec">
+        <div style={{ display: "flex", gap: 28 }}>
+          <Field label="Used for"><span className="mono">{edge.kind || "—"}</span></Field>
+          <Field label="Status"><StatusPill status={edge.status} /></Field>
+        </div>
+        {edge.description && <Field label="What it's used for"><p style={{ margin: 0, lineHeight: 1.55 }}>{edge.description}</p></Field>}
+      </div>
+      {calls.length > 0 && (
+        <div className="ax-insp-sec pad">
+          <span className="ax-field-label">Calls · {calls.length}</span>
+          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            {calls.map((c) => (
+              <div key={c} className={`ax-file${deleted ? " struck" : ""}`}>
+                <GitCompare size={11} /> <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      <div className="ax-insp-sec pad">
+        <span className="ax-field-label">Feedback to agent</span>
+        <MentionBox nodeId="" allNodeIds={p.allNodeIds} labelOf={p.labelOf} onAdd={(t) => p.addEdgeComment(edge.id, t)} />
       </div>
     </div>
   );

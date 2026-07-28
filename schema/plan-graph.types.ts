@@ -52,8 +52,16 @@ export interface Edge {
    */
   to: string;
   /**
-   * Relationship label rendered on the edge, e.g. calls, reads, writes, depends
+   * Short relationship label rendered on the edge and shown as 'Used for' in the inspector, e.g. calls, reads, writes, depends, 'reads / writes'
    */
   kind?: string;
   status: Status;
+  /**
+   * Free text: what the source uses the target for. Shown as 'What it's used for' in the edge inspector. The edge-analog of node.description.
+   */
+  description?: string;
+  /**
+   * The specific methods/functions the source invokes on the target, e.g. 'charge(orderId, amount)'. Shown as 'Calls · N' in the edge inspector. The edge-analog of node.files[]. For a 'new' edge these are planned calls that may not exist yet.
+   */
+  calls?: string[];
 }

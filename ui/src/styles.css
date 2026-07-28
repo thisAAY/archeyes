@@ -154,6 +154,23 @@ html, body, #root { height: 100%; margin: 0; }
 .ax-file { display: flex; align-items: center; gap: 8px; padding: 5px 8px; background: var(--surface-sunken);
   border: 1px solid var(--border); border-radius: var(--r-sm); font-family: var(--font-mono);
   font-size: var(--fs-mono); color: var(--text-1); }
+.ax-file.struck { color: var(--text-2); text-decoration: line-through; }
+
+/* edge inspector — connection endpoints */
+.ax-edge-endpoint { display: flex; align-items: center; gap: 9px; }
+.ax-edge-endpoint .ax-edge-arrow { width: 13px; flex: none; color: var(--text-3); }
+.ax-edge-endpoint .t { font-size: var(--fs-body); font-weight: 600; color: var(--text-1);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ax-edge-endpoint .p { font-family: var(--font-mono); font-size: var(--fs-micro); color: var(--text-mono); }
+
+/* edge label pill on the canvas — status color + diff glyph, accent when selected */
+.ax-edge-label { position: absolute; pointer-events: none; font-family: var(--font-mono);
+  font-size: 10px; line-height: 1; padding: 3px 7px; border-radius: var(--r-full);
+  background: var(--surface-1); border: 1px solid var(--border); color: var(--text-3); white-space: nowrap; }
+.ax-edge-label.new { color: var(--st-new); border-color: var(--st-new-line); }
+.ax-edge-label.modify { color: var(--st-modified); border-color: var(--st-modified-line); }
+.ax-edge-label.delete { color: var(--st-deleted); border-color: var(--st-deleted-line); opacity: .85; }
+.ax-edge-label.selected { color: var(--accent); border-color: var(--accent); }
 .ax-textarea { resize: none; width: 100%; box-sizing: border-box; padding: 9px 10px;
   background: var(--surface-sunken); color: var(--text-1); border: 1px solid var(--border-strong);
   border-radius: var(--r-sm); font-family: var(--font-sans); font-size: var(--fs-small); line-height: 1.5; outline: none; }

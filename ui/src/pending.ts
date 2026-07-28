@@ -5,6 +5,7 @@ import type { Feedback } from "./protocol.ts";
 
 export interface PendingEdits {
   comments: { nodeId: string; text: string }[];
+  edgeComments: { edgeId: string; text: string }[];
   reconnected: { edgeId: string; end: "source" | "target"; was: string; now: string }[];
   added: { from: string; to: string; kind?: string }[];
   deletedNodes: string[];
@@ -13,12 +14,13 @@ export interface PendingEdits {
 }
 
 export function empty(): PendingEdits {
-  return { comments: [], reconnected: [], added: [], deletedNodes: [], deletedEdges: [], moved: [] };
+  return { comments: [], edgeComments: [], reconnected: [], added: [], deletedNodes: [], deletedEdges: [], moved: [] };
 }
 
 export function count(p: PendingEdits): number {
   return (
     p.comments.length +
+    p.edgeComments.length +
     p.reconnected.length +
     p.added.length +
     p.deletedNodes.length +
@@ -30,6 +32,7 @@ export function count(p: PendingEdits): number {
 /** A stable key for a single pending edit, used by the tray's per-edit undo. */
 export type EditRef =
   | { kind: "comment"; index: number }
+  | { kind: "edgeComment"; index: number }
   | { kind: "reconnected"; index: number }
   | { kind: "added"; index: number }
   | { kind: "deletedNode"; id: string }
@@ -41,6 +44,9 @@ export function removeEdit(p: PendingEdits, ref: EditRef): PendingEdits {
   switch (ref.kind) {
     case "comment":
       next.comments.splice(ref.index, 1);
+      break;
+    case "edgeComment":
+      next.edgeComments.splice(ref.index, 1);
       break;
     case "reconnected":
       next.reconnected.splice(ref.index, 1);
@@ -64,6 +70,12 @@ export function removeEdit(p: PendingEdits, ref: EditRef): PendingEdits {
 export function addComment(p: PendingEdits, nodeId: string, text: string): PendingEdits {
   const next = clone(p);
   next.comments.push({ nodeId, text });
+  return next;
+}
+
+export function addEdgeComment(p: PendingEdits, edgeId: string, text: string): PendingEdits {
+  const next = clone(p);
+  next.edgeComments.push({ edgeId, text });
   return next;
 }
 
@@ -101,6 +113,7 @@ export function toggleDeleteEdge(p: PendingEdits, id: string): PendingEdits {
 export function toEnvelope(p: PendingEdits, action: Feedback["action"], generalNote?: string): Feedback {
   const fb: Feedback = { action };
   if (p.comments.length) fb.comments = p.comments;
+  if (p.edgeComments.length) fb.edgeComments = p.edgeComments;
   if (p.reconnected.length) fb.reconnected = p.reconnected;
   if (p.added.length) fb.added = { edges: p.added };
   if (p.deletedNodes.length || p.deletedEdges.length)
@@ -113,6 +126,7 @@ export function toEnvelope(p: PendingEdits, action: Feedback["action"], generalN
 function clone(p: PendingEdits): PendingEdits {
   return {
     comments: [...p.comments],
+    edgeComments: [...p.edgeComments],
     reconnected: [...p.reconnected],
     added: [...p.added],
     deletedNodes: [...p.deletedNodes],
