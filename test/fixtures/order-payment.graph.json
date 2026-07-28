@@ -14,7 +14,14 @@
     { "id": "LegacyPayAdapter", "label": "LegacyPayAdapter", "kind": "adapter", "group": "infra", "status": "delete", "files": ["src/legacy/pay.ts"] }
   ],
   "edges": [
-    { "id": "e1", "from": "OrderService", "to": "DB", "kind": "calls", "status": "existing" },
-    { "id": "e2", "from": "OrderService", "to": "LegacyPayAdapter", "kind": "calls", "status": "delete" }
+    { "id": "e1", "from": "OrderService", "to": "DB", "kind": "reads / writes", "status": "existing",
+      "description": "OrderService reads and writes order rows through the shared Postgres pool — the same transaction wraps the order and its line items. Unchanged by this plan.",
+      "calls": ["store.query<Order>(sql, params)", "store.tx(fn)"] },
+    { "id": "e2", "from": "OrderService", "to": "LegacyPayAdapter", "kind": "calls", "status": "delete",
+      "description": "The direct synchronous call into the legacy gateway. Removed once PaymentService owns capture.",
+      "calls": ["legacyPay.capture(order)"] },
+    { "id": "e3", "from": "PaymentService", "to": "PaymentRepo", "kind": "persists", "status": "new",
+      "description": "PaymentService persists payment records and gateway receipts via the new repository.",
+      "calls": ["save(payment)"] }
   ]
 }

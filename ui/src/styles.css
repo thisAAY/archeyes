@@ -84,15 +84,37 @@ html, body, #root { height: 100%; margin: 0; }
 .react-flow__node-archgroup { background: transparent !important; border: 0 !important; padding: 0 !important; }
 
 /* ---------- floating chrome ---------- */
-.ax-toolbar { position: absolute; z-index: 20; display: flex; align-items: center; gap: 2px;
-  padding: 4px; background: var(--surface-1); border: 1px solid var(--border-strong);
-  border-radius: var(--r-lg); box-shadow: var(--sh-node); }
+/* Floating command bar — mirrors the DS Toolbar spec (surface-1, border-strong,
+   r-lg, sh-raise, 2px gap / 5px pad, separators). */
+.ax-toolbar { position: absolute; z-index: 20; display: inline-flex; align-items: center; gap: 2px;
+  padding: 5px; background: var(--surface-1); border: 1px solid var(--border-strong);
+  border-radius: var(--r-lg); box-shadow: var(--sh-raise, var(--sh-node)); }
 .ax-toolbar.tl { top: 12px; left: 12px; }
-.ax-toolbar .sep { width: 1px; height: 18px; background: var(--border); margin: 0 3px; }
+.ax-toolbar .sep { width: 1px; height: 18px; background: var(--border-strong); margin: 0 4px; flex: none; }
 .ax-tool { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px;
-  background: transparent; border: 0; border-radius: var(--r-sm); color: var(--text-2); cursor: pointer; }
+  background: transparent; border: 1px solid transparent; border-radius: var(--r-md); color: var(--text-2); cursor: pointer;
+  transition: var(--t-hover, all .12s ease); }
 .ax-tool:hover { background: var(--surface-2); color: var(--text-1); }
-.ax-tool.active { background: var(--accent); color: var(--accent-fg); }
+.ax-tool.active { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+
+/* tool-driven canvas cursors */
+.ax-canvas-bg.tool-pan .react-flow__pane { cursor: grab; }
+.ax-canvas-bg.tool-pan .react-flow__pane:active { cursor: grabbing; }
+.ax-canvas-bg.tool-add .react-flow__pane { cursor: crosshair; }
+
+/* status filter popover (anchored under the toolbar) */
+.ax-filter-pop { position: absolute; top: 52px; left: 12px; z-index: 46; min-width: 190px;
+  background: var(--surface-1); border: 1px solid var(--border-strong); border-radius: var(--r-md);
+  box-shadow: var(--sh-raise, var(--sh-node)); padding: 8px; }
+.ax-filter-pop .ttl { font-family: var(--font-mono); font-size: var(--fs-micro); letter-spacing: var(--ls-caps);
+  text-transform: uppercase; color: var(--text-3); padding: 2px 6px 6px; }
+.ax-filter-row { display: flex; align-items: center; gap: 8px; width: 100%; padding: 5px 6px; border: 0; border-radius: var(--r-sm);
+  background: transparent; color: var(--text-1); font-size: var(--fs-small); cursor: pointer; text-align: left; }
+.ax-filter-row:hover { background: var(--surface-2); }
+.ax-filter-row .box { width: 14px; height: 14px; border-radius: 3px; border: 1.5px solid var(--border-strong);
+  display: inline-flex; align-items: center; justify-content: center; flex: none; color: var(--accent-fg); }
+.ax-filter-row.on .box { background: var(--accent); border-color: var(--accent); }
+.ax-filter-row .sw { width: 18px; height: 0; border-top-width: 2px; border-top-style: solid; flex: none; }
 /* minimap → styled "MAP" panel, top-right (matches design) */
 .react-flow__minimap.ax-map { margin: 12px; border: 1px solid var(--border-strong); border-radius: var(--r-lg);
   box-shadow: var(--sh-node); overflow: visible; padding-top: 14px; }
@@ -154,10 +176,32 @@ html, body, #root { height: 100%; margin: 0; }
 .ax-file { display: flex; align-items: center; gap: 8px; padding: 5px 8px; background: var(--surface-sunken);
   border: 1px solid var(--border); border-radius: var(--r-sm); font-family: var(--font-mono);
   font-size: var(--fs-mono); color: var(--text-1); }
+.ax-file.struck { color: var(--text-2); text-decoration: line-through; }
+
+/* edge inspector — connection endpoints */
+.ax-edge-endpoint { display: flex; align-items: center; gap: 9px; }
+.ax-edge-endpoint .ax-edge-arrow { width: 13px; flex: none; color: var(--text-3); }
+.ax-edge-endpoint .t { font-size: var(--fs-body); font-weight: 600; color: var(--text-1);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ax-edge-endpoint .p { font-family: var(--font-mono); font-size: var(--fs-micro); color: var(--text-mono); }
+
+/* edge label pill on the canvas — status color + diff glyph, accent when selected */
+.ax-edge-label { position: absolute; pointer-events: none; font-family: var(--font-mono);
+  font-size: 10px; line-height: 1; padding: 3px 7px; border-radius: var(--r-full);
+  background: var(--surface-1); border: 1px solid var(--border); color: var(--text-3); white-space: nowrap; }
+.ax-edge-label.new { color: var(--st-new); border-color: var(--st-new-line); }
+.ax-edge-label.modify { color: var(--st-modified); border-color: var(--st-modified-line); }
+.ax-edge-label.delete { color: var(--st-deleted); border-color: var(--st-deleted-line); opacity: .85; }
+.ax-edge-label.selected { color: var(--accent); border-color: var(--accent); }
 .ax-textarea { resize: none; width: 100%; box-sizing: border-box; padding: 9px 10px;
   background: var(--surface-sunken); color: var(--text-1); border: 1px solid var(--border-strong);
   border-radius: var(--r-sm); font-family: var(--font-sans); font-size: var(--fs-small); line-height: 1.5; outline: none; }
 .ax-textarea:focus { border-color: var(--accent); }
+.ax-input { width: 100%; box-sizing: border-box; padding: 7px 9px; margin-top: 3px;
+  background: var(--surface-sunken); color: var(--text-1); border: 1px solid var(--border-strong);
+  border-radius: var(--r-sm); font-family: var(--font-sans); font-size: var(--fs-small); line-height: 1.4; outline: none; }
+.ax-input:focus { border-color: var(--accent); }
+select.ax-input { cursor: pointer; }
 .ax-mention { position: absolute; bottom: calc(100% + 4px); left: 0; right: 0; z-index: 5;
   background: var(--surface-1); border: 1px solid var(--border-strong); border-radius: var(--r-md);
   box-shadow: var(--sh-pop); padding: 4px; max-height: 150px; overflow-y: auto; }

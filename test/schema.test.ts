@@ -65,6 +65,27 @@ test("graph: additional properties are rejected (typo guard)", () => {
   assert.equal(validateGraph(bad).valid, false);
 });
 
+test("graph: edge accepts description + calls[]", () => {
+  const g = structuredClone(goldenGraph);
+  const e1 = g.edges.find((e) => e.id === "e1")!;
+  assert.equal(typeof e1.description, "string");
+  assert.ok(Array.isArray(e1.calls) && e1.calls.length > 0);
+  assert.equal(validateGraph(g).valid, true);
+});
+
+test("graph: edge without description/calls is still valid (optional)", () => {
+  const g = structuredClone(goldenGraph) as any;
+  delete g.edges[0].description;
+  delete g.edges[0].calls;
+  assert.equal(validateGraph(g).valid, true);
+});
+
+test("graph: edge calls must be an array of strings", () => {
+  const bad = structuredClone(goldenGraph) as any;
+  bad.edges[0].calls = "store.query()"; // not an array
+  assert.equal(validateGraph(bad).valid, false);
+});
+
 test("feedback: valid revise envelope (design-doc example)", () => {
   const fb = {
     action: "revise",
@@ -84,8 +105,35 @@ test("feedback: reconnected.end must be source|target", () => {
   assert.equal(r.valid, false);
 });
 
-test("feedback: added.nodes is rejected (V1 = edges only)", () => {
-  const r = validateFeedback({ action: "revise", added: { nodes: [{ id: "X" }] } as any });
+test("feedback: a well-formed added.node is accepted (tempId + label + kind)", () => {
+  const r = validateFeedback({
+    action: "revise",
+    added: { nodes: [{ tempId: "new:1", label: "PricingCache", kind: "service" }] },
+  });
+  assert.equal(r.valid, true, r.errors.join("; "));
+});
+
+test("feedback: a malformed added.node is rejected (missing required fields / bad kind)", () => {
+  assert.equal(validateFeedback({ action: "revise", added: { nodes: [{ label: "X" }] } as any }).valid, false, "missing tempId + kind");
+  assert.equal(validateFeedback({ action: "revise", added: { nodes: [{ tempId: "new:1", label: "X", kind: "widget" }] } as any }).valid, false, "kind not in enum");
+  assert.equal(validateFeedback({ action: "revise", added: { nodes: [{ tempId: "new:1", label: "X", kind: "service", id: "oops" }] } as any }).valid, false, "additionalProperties");
+});
+
+test("feedback: edgeComments envelope is valid", () => {
+  const r = validateFeedback({
+    action: "revise",
+    edgeComments: [{ edgeId: "e1", text: "route this through @OrderRepo" }],
+  });
+  assert.equal(r.valid, true, r.errors.join("; "));
+});
+
+test("feedback: edgeComment missing edgeId is rejected", () => {
+  const r = validateFeedback({ action: "revise", edgeComments: [{ text: "no target" }] as any });
+  assert.equal(r.valid, false);
+});
+
+test("feedback: edgeComment with empty text is rejected", () => {
+  const r = validateFeedback({ action: "revise", edgeComments: [{ edgeId: "e1", text: "" }] });
   assert.equal(r.valid, false);
 });
 

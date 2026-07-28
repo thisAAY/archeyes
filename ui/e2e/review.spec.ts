@@ -62,6 +62,77 @@ test("renders the authored graph with diff-styled nodes", async ({ page }) => {
   await expect(payment.locator(".ax-status-pill")).toContainText("new");
 });
 
+test("edge labels carry the diff glyph (+ new, none for existing)", async ({ page }) => {
+  await page.goto(baseURL);
+  // e3 PaymentService→PaymentRepo is "new" → "+" glyph
+  await expect(page.locator(".ax-edge-label", { hasText: "persists" })).toContainText("+");
+  // e1 is "existing" → no glyph
+  const existing = page.locator(".ax-edge-label", { hasText: "reads / writes" });
+  await expect(existing).toBeVisible();
+  await expect(existing).not.toContainText("+");
+});
+
+test("click an edge → edge inspector shows connection, description, calls; feedback lands in the tray", async ({ page }) => {
+  await page.goto(baseURL);
+  // click the fat interaction path of e1 (OrderService → Postgres)
+  await page.locator('.react-flow__edge[data-id="e1"] .react-flow__edge-interaction').click({ force: true });
+
+  const panel = page.locator(".ax-panel");
+  await expect(panel.getByText("Connection")).toBeVisible();
+  await expect(panel.getByText("What it's used for")).toBeVisible();
+  await expect(panel.getByText(/shared Postgres pool/)).toBeVisible(); // edge.description
+  await expect(panel.getByText("store.query<Order>(sql, params)")).toBeVisible(); // edge.calls[]
+
+  // leave feedback on the connection → it collects in the Changes tray (no Send here)
+  await panel.getByPlaceholder(/Add feedback for the agent/).fill("route this through @OrderRepo");
+  await panel.getByRole("button", { name: "Add comment" }).click();
+  await expect(page.locator(".ax-tab-badge")).toHaveText("1");
+  await panel.getByRole("button", { name: /Changes/ }).click();
+  await expect(panel.getByText("Connection notes")).toBeVisible();
+});
+
+test("toolbar shows the five canvas tools", async ({ page }) => {
+  await page.goto(baseURL);
+  const bar = page.locator(".ax-toolbar.tl");
+  for (const name of ["Select (V)", "Pan (H)", "Add node (N)", "Comment (C)", "Filter by status"]) {
+    await expect(bar.getByRole("button", { name })).toBeVisible();
+  }
+});
+
+test("add tool places a new node that lands in the Changes tray", async ({ page }) => {
+  await page.goto(baseURL);
+  await page.getByRole("button", { name: "Add node (N)" }).click();
+  await expect(page.getByText(/Add mode/)).toBeVisible();
+  // click an empty spot: bottom-center of the pane, below the laid-out graph
+  const pane = page.locator(".react-flow__pane");
+  const box = (await pane.boundingBox())!;
+  await pane.click({ position: { x: box.width / 2, y: box.height - 24 } });
+
+  const form = page.locator(".ax-composer", { hasText: "New node" });
+  await expect(form).toBeVisible();
+  await form.getByPlaceholder("e.g. PricingService").fill("PricingService");
+  await form.getByRole("button", { name: "Add node" }).click();
+
+  // node renders on the canvas as a "new" node...
+  const node = page.locator(".ax-node", { hasText: "PricingService" });
+  await expect(node).toBeVisible();
+  await expect(node).toHaveClass(/ax-status-new/);
+  // ...and shows up in the tray under "New nodes"
+  await expect(page.locator(".ax-tab-badge")).toHaveText("1");
+  await page.getByRole("button", { name: /Changes/ }).click();
+  await expect(page.locator(".ax-panel").getByText("New nodes")).toBeVisible();
+});
+
+test("filter by status hides matching nodes", async ({ page }) => {
+  await page.goto(baseURL);
+  await expect(page.locator(".ax-node", { hasText: "PaymentService" })).toBeVisible(); // "new" node
+  await page.getByRole("button", { name: "Filter by status" }).click();
+  // toggle OFF "new" → PaymentService (new) disappears; OrderService (modify) stays
+  await page.locator(".ax-filter-pop").getByRole("button", { name: "new", exact: true }).click();
+  await expect(page.locator(".ax-node", { hasText: "PaymentService" })).toHaveCount(0);
+  await expect(page.locator(".ax-node", { hasText: "OrderService" })).toBeVisible();
+});
+
 test("comment on a node → Send → feedback envelope carries it", async ({ page }) => {
   await page.goto(baseURL);
   await page.locator(".ax-node", { hasText: "OrderService" }).click(); // selects → Inspector tab

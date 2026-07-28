@@ -27,10 +27,18 @@ export interface BuiltGraph {
 }
 
 export function buildGraph(graph: PlanGraph, saved: LayoutMap): BuiltGraph {
-  const g = new dagre.graphlib.Graph();
+  // Compound layout: each node is parented to its group's cluster so dagre keeps
+  // group members together. Without this, dagre ignores `group` and members scatter
+  // across ranks — the post-hoc group boxes below then overlap into a hairball.
+  const g = new dagre.graphlib.Graph({ compound: true });
   g.setGraph({ rankdir: "TB", nodesep: 60, ranksep: 90 });
   g.setDefaultEdgeLabel(() => ({}));
-  for (const n of graph.nodes) g.setNode(n.id, { width: NODE_W, height: NODE_H });
+  const groupIds = new Set((graph.groups ?? []).map((grp) => grp.id));
+  for (const id of groupIds) g.setNode(`cluster:${id}`, {});
+  for (const n of graph.nodes) {
+    g.setNode(n.id, { width: NODE_W, height: NODE_H });
+    if (n.group && groupIds.has(n.group)) g.setParent(n.id, `cluster:${n.group}`);
+  }
   for (const e of graph.edges) g.setEdge(e.from, e.to);
   dagre.layout(g);
 
@@ -74,12 +82,11 @@ export function buildGraph(graph: PlanGraph, saved: LayoutMap): BuiltGraph {
 
   const edges: RFEdge[] = graph.edges.map((e) => ({
     id: e.id,
+    type: "arch", // custom edge: pill label with diff glyph + click-to-inspect
     source: e.from,
     target: e.to,
-    data: { status: e.status },
-    label: e.kind ?? "",
-    labelStyle: { fill: "#8b98ad", fontSize: 10 },
-    labelBgStyle: { fill: "#131722" },
+    // kind/description/calls ride along so the edge inspector reads them off data
+    data: { status: e.status, kind: e.kind ?? "", description: e.description, calls: e.calls },
     reconnectable: true,
     ...edgeStyle(e.status),
   }));

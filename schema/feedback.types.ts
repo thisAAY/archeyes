@@ -20,6 +20,16 @@ export interface Feedback {
      */
     text: string;
   }[];
+  /**
+   * Feedback the developer left on a connection (via the edge inspector). Edge-scoped counterpart of comments[]; kept separate so the agent reads a dedicated edge stream.
+   */
+  edgeComments?: {
+    edgeId: string;
+    /**
+     * May contain @NodeId mentions
+     */
+    text: string;
+  }[];
   reconnected?: {
     edgeId: string;
     /**
@@ -40,11 +50,39 @@ export interface Feedback {
     edges?: string[];
   };
   /**
-   * V1 accepts new EDGES only. New nodes are requested via comments (e.g. 'add a @PaymentRepo below this').
+   * New nodes and/or edges the developer drew on the canvas. A new node carries a client-side tempId (e.g. 'new:1'); added edges may reference that tempId as an endpoint. The agent creates each node, assigns a real id, wires the edges, and echoes the tempId → real-id mapping back so the next render shows the real name.
    */
   added?: {
+    /**
+     * Nodes the dev created this round. tempId is dev-side only; the agent replaces it with a real node id.
+     */
+    nodes?: {
+      /**
+       * Client-side placeholder id (e.g. 'new:1'). Referenced by added.edges until the agent assigns a real id.
+       */
+      tempId: string;
+      label: string;
+      /**
+       * Same kind vocabulary as plan-graph nodes; drives the node icon.
+       */
+      kind: "service" | "repository" | "datastore" | "adapter" | "external" | "module" | "component" | "other";
+      /**
+       * Optional target group id (references graph.groups[].id)
+       */
+      group?: string;
+      /**
+       * Optional free-text intent for the new node
+       */
+      description?: string;
+    }[];
     edges?: {
+      /**
+       * Source node id, or an added-node tempId
+       */
       from: string;
+      /**
+       * Target node id, or an added-node tempId
+       */
       to: string;
       kind?: string;
     }[];

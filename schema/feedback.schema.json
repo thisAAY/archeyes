@@ -25,6 +25,20 @@
         }
       }
     },
+    "edgeComments": {
+      "type": "array",
+      "default": [],
+      "description": "Feedback the developer left on a connection (via the edge inspector). Edge-scoped counterpart of comments[]; kept separate so the agent reads a dedicated edge stream.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["edgeId", "text"],
+        "properties": {
+          "edgeId": { "type": "string", "minLength": 1 },
+          "text": { "type": "string", "minLength": 1, "description": "May contain @NodeId mentions" }
+        }
+      }
+    },
     "reconnected": {
       "type": "array",
       "default": [],
@@ -53,8 +67,29 @@
       "type": "object",
       "additionalProperties": false,
       "default": { "edges": [] },
-      "description": "V1 accepts new EDGES only. New nodes are requested via comments (e.g. 'add a @PaymentRepo below this').",
+      "description": "New nodes and/or edges the developer drew on the canvas. A new node carries a client-side tempId (e.g. 'new:1'); added edges may reference that tempId as an endpoint. The agent creates each node, assigns a real id, wires the edges, and echoes the tempId → real-id mapping back so the next render shows the real name.",
       "properties": {
+        "nodes": {
+          "type": "array",
+          "default": [],
+          "description": "Nodes the dev created this round. tempId is dev-side only; the agent replaces it with a real node id.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["tempId", "label", "kind"],
+            "properties": {
+              "tempId": { "type": "string", "minLength": 1, "description": "Client-side placeholder id (e.g. 'new:1'). Referenced by added.edges until the agent assigns a real id." },
+              "label": { "type": "string", "minLength": 1 },
+              "kind": {
+                "type": "string",
+                "enum": ["service", "repository", "datastore", "adapter", "external", "module", "component", "other"],
+                "description": "Same kind vocabulary as plan-graph nodes; drives the node icon."
+              },
+              "group": { "type": "string", "description": "Optional target group id (references graph.groups[].id)" },
+              "description": { "type": "string", "description": "Optional free-text intent for the new node" }
+            }
+          }
+        },
         "edges": {
           "type": "array",
           "default": [],
@@ -63,8 +98,8 @@
             "additionalProperties": false,
             "required": ["from", "to"],
             "properties": {
-              "from": { "type": "string", "minLength": 1 },
-              "to": { "type": "string", "minLength": 1 },
+              "from": { "type": "string", "minLength": 1, "description": "Source node id, or an added-node tempId" },
+              "to": { "type": "string", "minLength": 1, "description": "Target node id, or an added-node tempId" },
               "kind": { "type": "string" }
             }
           }

@@ -54,13 +54,14 @@ page can't reach it via DNS rebinding. Nothing leaves your machine.
 
 ## Scope
 
-**V1 ships:** the full round-trip; before/after diff; drag / reconnect / draw-edge /
-comment (`@mention`) / delete; layout persistence; `--resume`; colorblind-safe diff
-encoding; light + dark.
+**V1 ships:** the full round-trip; before/after diff; a 5-tool canvas toolbar
+(select / pan / add node / comment / filter-by-status); drag / reconnect / draw-edge /
+on-canvas node creation / comment (`@mention`) / delete; layout persistence; `--resume`;
+colorblind-safe diff encoding; light + dark.
 
-**Deferred (V2):** live re-render over websockets, on-canvas node creation, full
-keyboard/screen-reader parity (the prose plan is the accessible representation in V1),
-whole-project collapse/expand, an MCP-server transport.
+**Deferred (V2):** live re-render over websockets, full keyboard/screen-reader parity
+(the prose plan is the accessible representation in V1), whole-project collapse/expand,
+an MCP-server transport.
 
 ## Run it locally
 
