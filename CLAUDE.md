@@ -27,6 +27,23 @@ The published npm package ships only `dist/cli/*.js` + `dist/ui/index.html` + do
 (see `files` in package.json). Source runs as TS directly in dev via Node's
 type-stripping; **the published artifact is compiled JS** (esbuild).
 
+## Design system
+
+The visual language lives in the Claude Design project **"ArchEyes Design System"**
+(id `eaa862b4-8285-4d1a-9b6b-2710dee72e9e`). `_ds/tokens/*.css` is a vendored copy of
+it; `ui/src/tokens/` is a copy of that. The flow is **one way**:
+
+```
+Claude Design ("ArchEyes Design System")  →  _ds/tokens/*.css  →  ui/src/tokens/*.css  →  vite build
+```
+
+Do **not** hand-edit `ui/src/tokens/` (or `_ds/`) to change the design — it silently
+drifts from the source. To change tokens: edit them in Claude Design, re-vendor into
+`_ds/`, copy into `ui/src/tokens/`, then rebuild the UI. Pull updates with the
+`DesignSync` tool or the `/design-sync` skill (read methods list/get project files;
+`list_projects` shows the writable design-system projects). `proto/` is the original
+clickable Claude Design prototype — reference only, not built or shipped.
+
 ## Commands
 
 ```bash
