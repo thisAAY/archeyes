@@ -50,7 +50,7 @@ export function Rail(p: RailProps) {
         </Button>
         <div style={{ display: "flex", gap: 8 }}>
           <Button variant="secondary" size="sm" disabled={p.busy} onClick={p.onApprove} style={{ flex: 1 }}>
-            <Check size={13} /> Approve plan
+            <Check size={13} /> Approve design
           </Button>
           <Button variant="ghost" size="sm" disabled={p.busy} onClick={p.onCancel} style={{ flex: 1 }}>Cancel</Button>
         </div>
